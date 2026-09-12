@@ -1,0 +1,22 @@
+# Dataset (download separately, see README)
+data/plantvillage/
+data/_pv_download/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Streamlit local settings
+.streamlit/secrets.toml
+
+# Temporary files of the report build
+docs/_build/

@@ -1,0 +1,12 @@
+2026-09-11 23:05:49,490 Using device: cuda
+2026-09-11 23:05:49,745 Train images: 38013, validation images: 8145, classes: 38
+2026-09-11 23:12:31,442 Epoch 1/5  train loss 0.3837 acc 0.9137 | val loss 0.0672 acc 0.9805 | 401s
+2026-09-11 23:12:31,579   saved new best model (val acc 0.9805)
+2026-09-11 23:17:30,347 Epoch 2/5  train loss 0.0606 acc 0.9831 | val loss 0.0532 acc 0.9822 | 299s
+2026-09-11 23:17:30,415   saved new best model (val acc 0.9822)
+2026-09-11 23:21:51,643 Epoch 3/5  train loss 0.0408 acc 0.9878 | val loss 0.0267 acc 0.9918 | 261s
+2026-09-11 23:21:51,689   saved new best model (val acc 0.9918)
+2026-09-11 23:25:39,758 Epoch 4/5  train loss 0.0287 acc 0.9910 | val loss 0.0281 acc 0.9913 | 228s
+2026-09-11 23:29:28,719 Epoch 5/5  train loss 0.0260 acc 0.9922 | val loss 0.0194 acc 0.9947 | 229s
+2026-09-11 23:29:28,802   saved new best model (val acc 0.9947)
+2026-09-11 23:29:28,813 Training finished in 23.6 minutes. Best val acc: 0.9947
