@@ -1,0 +1,56 @@
+{
+  "number": 11,
+  "title": "Face detection and Recognition",
+  "aim": "To detect faces with the Viola-Jones Haar cascade and the YuNet convolutional detector, and to recognise faces with Eigenfaces (PCA), Local Binary Pattern histograms and the SFace embedding model.",
+  "objectives": [
+    "Detect faces with a Haar cascade and with the YuNet CNN detector.",
+    "Recognise Olivetti faces with Eigenfaces (PCA + SVM / 1-NN) and LBP histograms.",
+    "Verify face pairs with SFace embeddings and cosine similarity."
+  ],
+  "theory": [
+    "Face detection locates faces in an image. Recognition then identifies or verifies the person. The Viola-Jones detector evaluates Haar-like features from the integral image with an AdaBoost cascade, which rejects most background windows in its first stages. YuNet is a small CNN that predicts boxes, scores and five landmarks in one pass and copes better with pose and illumination changes.",
+    "Eigenfaces treats a $64 \\times 64$ face as a 4096-dimensional vector and projects it onto the $k$ principal components of the training faces. An SVM or a nearest-neighbour rule classifies the projected vector. Local Binary Patterns encode each pixel by comparing it with its 8 neighbours; the histograms of the cells are concatenated and compared with the chi-square distance. SFace maps an aligned face to a 128-dimensional embedding, and two faces count as the same person when the cosine similarity exceeds 0.363.",
+    "$$\\mathbf{w} = U_k^T (\\mathbf{x} - \\bar{\\mathbf{x}}), \\qquad \\chi^2(h_1, h_2) = \\sum_i \\frac{(h_{1,i} - h_{2,i})^2}{h_{1,i} + h_{2,i}}$$",
+    "$$\\cos(\\mathbf{e}_1, \\mathbf{e}_2) = \\frac{\\mathbf{e}_1 \\cdot \\mathbf{e}_2}{\\|\\mathbf{e}_1\\|\\,\\|\\mathbf{e}_2\\|} \\ge 0.363$$"
+  ],
+  "tools": "Python 3.11, OpenCV 4.11 contrib build (CascadeClassifier, FaceDetectorYN, FaceRecognizerSF), NumPy, scikit-learn, Matplotlib",
+  "dataset": "lena.jpg and messi5.jpg from the OpenCV samples, the Olivetti (AT&T) face database of 400 grayscale 64 x 64 images of 40 people fetched with scikit-learn, and the YuNet and SFace ONNX models from the OpenCV model zoo.",
+  "algorithm": [
+    "Load the Haar face and eye cascades and create the YuNet detector (score threshold 0.7).",
+    "Detect faces in lena.jpg, messi5.jpg and a 12-face Olivetti collage with both detectors and draw boxes and landmarks.",
+    "Split Olivetti into 7 training and 3 test images per subject and fit PCA with 120 components.",
+    "Train an RBF SVM ($C = 10$) and a 1-NN classifier on the PCA features and compute the test accuracy.",
+    "Compute LBP codes, $8 \\times 8$ grid histograms and the chi-square nearest-neighbour accuracy.",
+    "Align face pairs with YuNet, extract SFace embeddings and compare the cosine similarity with 0.363.",
+    "Plot eigenfaces, predictions, accuracies and verification pairs."
+  ],
+  "code_file": "code/exp11_face_detection_recognition.py",
+  "figures": [
+    {
+      "file": "fig01_haar_vs_yunet.png",
+      "caption": "Figure 11.1: Face detection on lena and messi5 with the Haar cascade (face and eye boxes) and YuNet (box, landmarks, score)."
+    },
+    {
+      "file": "fig02_collage_detection.png",
+      "caption": "Figure 11.2: Detection on a 12-face Olivetti collage: Haar finds 11 faces, YuNet all 12."
+    },
+    {
+      "file": "fig03_mean_face_eigenfaces.png",
+      "caption": "Figure 11.3: Mean face and the first 13 eigenfaces from the 280 training faces."
+    },
+    {
+      "file": "fig04_recognition_predictions.png",
+      "caption": "Figure 11.4: Ten test faces with the true and predicted subjects of the Eigenfaces + SVM classifier. Errors in red."
+    },
+    {
+      "file": "fig05_accuracy_and_sface_verification.png",
+      "caption": "Figure 11.5: Accuracy of the three recognisers and SFace verification of three face pairs with cosine scores."
+    }
+  ],
+  "results": [
+    "Both detectors found the face in lena.jpg and messi5.jpg (YuNet confidence 0.91 and 0.92). On the 12-face collage the Haar cascade found 11 faces; YuNet found all 12 with correct landmarks.",
+    "With 120 PCA components (96.2 percent of the variance) Eigenfaces + SVM reached 93.33 percent (112 of 120 test faces), PCA + 1-NN 83.33 percent and the LBP chi-square recogniser 95.83 percent.",
+    "SFace gave a cosine similarity of 0.926 for two images of subject 3 (match) and 0.204 and 0.130 for different people (no match). All three verification decisions were correct."
+  ],
+  "conclusion": "The Haar cascade is fast but missed one face of the collage; YuNet detected every face and its landmarks. On Olivetti the LBP histograms (95.8 percent) beat Eigenfaces (93.3 percent), and the SFace similarities of 0.926 for the same person against 0.204 or less for different people leave the 0.363 threshold well clear."
+}

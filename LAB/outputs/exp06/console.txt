@@ -1,0 +1,14 @@
+Otsu threshold selected automatically = 111
+  global T=100       foreground (dark) pixels =  23.9 %
+  Otsu               foreground (dark) pixels =  30.0 %
+  adaptive mean      foreground (dark) pixels =  39.8 %
+  adaptive Gaussian  foreground (dark) pixels =  37.6 %
+Leaf area = 118513 px (45.2 % of image), lesion area = 4719 px = 3.98 % of leaf, lesions counted = 11
+K-means k=2 : compactness = 5.824e+08, cluster sizes = [163292, 98852]
+K-means k=3 : compactness = 3.637e+08, cluster sizes = [71854, 142518, 47772]
+K-means k=4 : compactness = 2.382e+08, cluster sizes = [61307, 78713, 82371, 39753]
+Mean shift (sp=15, sr=30): unique colours 103847 -> 31851
+Watershed on smarties: 14 objects segmented
+GrabCut foreground = 42.9 % of image
+Region growing from seed (256, 200) on Lab a-channel (tol 14): region = 40.2 % of image, IoU with GrabCut = 0.886
+Saved figures to outputs/exp06

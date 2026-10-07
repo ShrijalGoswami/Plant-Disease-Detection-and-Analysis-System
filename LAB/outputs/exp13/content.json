@@ -1,0 +1,52 @@
+{
+  "number": 13,
+  "title": "Content based video retrieval",
+  "aim": "To build a content-based video retrieval system that cuts videos into shots, describes each shot by visual features taken from its frames, and returns the shots most similar to a query clip.",
+  "objectives": [
+    "Detect shot boundaries from colour-histogram differences and pick a key frame for each shot.",
+    "Describe each shot with colour, edge and deep CNN features and rank the database against transformed queries.",
+    "Evaluate retrieval with the rank of the true shot, mean reciprocal rank (MRR) and precision at 1."
+  ],
+  "theory": [
+    "Content based video retrieval (CBVR) finds video segments by what they look like. The videos are cut into shots, each shot is summarised by a feature vector, and a query is answered by ranking the stored vectors by distance. A hard cut changes the colour histogram abruptly, so a cut is declared where the distance between the normalised histograms $h(t)$ of consecutive frames exceeds a threshold. The middle frame of each clip is its key frame.",
+    "$$d(t) = \\frac{1}{2} \\sum_{b} \\left| h_b(t) - h_b(t-1) \\right|$$",
+    "Three descriptors are used: an HSV colour histogram ($8 \\times 8 \\times 4$ bins), an edge-orientation histogram (16 bins weighted by gradient magnitude) and the $L_2$-normalised 512-dimensional ResNet-18 embedding of the key frame. Histograms are compared with the chi-square distance and deep features with the cosine distance. Each distance is divided by its database mean before the three are fused as $d = 0.4\\, \\bar{d}_{\\text{colour}} + 0.2\\, \\bar{d}_{\\text{edge}} + 0.4\\, \\bar{d}_{\\text{deep}}$. Retrieval quality is measured by $\\text{MRR} = \\frac{1}{Q} \\sum_q 1/\\text{rank}_q$ and by precision at 1.",
+    "$$d_{\\chi^2}(p, q) = \\frac{1}{2} \\sum_{b} \\frac{(p_b - q_b)^2}{p_b + q_b}, \\qquad d_{\\cos}(\\mathbf{p}, \\mathbf{q}) = 1 - \\mathbf{p} \\cdot \\mathbf{q}$$"
+  ],
+  "tools": "Python 3.11, OpenCV 5.0 (calcHist, Sobel, imencode/imdecode), PyTorch 2.10 + torchvision 0.25 (ResNet-18 ImageNet weights on GPU), NumPy, Matplotlib",
+  "dataset": "Four OpenCV sample videos: Megamind.avi and Megamind_bugy.avi (270 frames each, animation with cuts; the second file is a corrupted copy of the first with a green bar artefact), vtest.avi (795 frames, fixed surveillance camera) and tree.avi (68 frames, swaying tree and a hand). All frames are resized to 320 x 240.",
+  "algorithm": [
+    "Read every video at $320 \\times 240$ and compute the normalised HSV histogram of each frame.",
+    "Declare a cut where the histogram distance exceeds 0.12 (minimum shot length 8 frames) and split shots longer than 60 frames.",
+    "For every clip store the key frame, the mean HSV histogram, the edge-orientation histogram and the ResNet-18 embedding.",
+    "Build five queries: crop, brightness change, horizontal flip, down-scaling with JPEG compression, and later frames of a shot.",
+    "Compute chi-square and cosine distances from each query to every clip, scale by the mean and combine with weights 0.4, 0.2, 0.4.",
+    "Rank the database, record the rank of the true clip per feature type and compute MRR, P@1 and mean rank.",
+    "Plot the shot-boundary curve, key-frame gallery, top-5 results and metric chart."
+  ],
+  "code_file": "code/exp13_video_retrieval.py",
+  "figures": [
+    {
+      "file": "fig01_shot_boundaries.png",
+      "caption": "Figure 13.1: Histogram distance between consecutive frames of Megamind.avi. The three cuts at frames 98, 154 and 200 exceed the 0.12 threshold."
+    },
+    {
+      "file": "fig02_keyframe_gallery.png",
+      "caption": "Figure 13.2: Key frames of the 30 database clips with their frame ranges."
+    },
+    {
+      "file": "fig03_retrieval_results.png",
+      "caption": "Figure 13.3: Five query clips (left) and their top-5 results by combined distance. The green frame marks the true source clip."
+    },
+    {
+      "file": "fig04_retrieval_metrics.png",
+      "caption": "Figure 13.4: MRR and precision at 1 for colour, edge, deep and combined features over the five queries."
+    }
+  ],
+  "results": [
+    "Shot detection found 4 shots in Megamind.avi (cuts at frames 98, 154 and 200), 7 in Megamind_bugy.avi, 1 in vtest.avi and 2 in tree.avi. After splitting the long shots the database held 30 clips.",
+    "Each single feature failed somewhere. The colour histogram ranked the true clip third under the brightness change, the edge histogram ranked it seventh under the flip, and the deep feature preferred near-duplicate clips (ranks 2 and 3). The combined distance ranked the true clip first for all five queries.",
+    "MRR was 0.867 (colour), 0.729 (edge), 0.767 (deep) and 1.000 (combined). P@1 was 0.80, 0.60, 0.60 and 1.00, and the mean ranks were 1.40, 2.40, 1.60 and 1.00."
+  ],
+  "conclusion": "Histogram differences cut the videos into shots, and colour, edge and deep features each rank the database for a query. No single feature survived every transformation, but their weighted fusion put the correct clip at rank 1 for all five queries."
+}

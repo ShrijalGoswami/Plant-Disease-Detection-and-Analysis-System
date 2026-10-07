@@ -1,0 +1,56 @@
+{
+  "number": 12,
+  "title": "Object detection from dynamic Background for Surveillance",
+  "aim": "To detect moving objects in surveillance video by modelling and subtracting the background, to compare frame differencing with the adaptive MOG2 and KNN models on static and dynamic backgrounds, and to build a zone-intrusion alarm on the detections.",
+  "objectives": [
+    "Implement running-average differencing and use the MOG2 and KNN background subtractors.",
+    "Clean the masks and extract bounding boxes of moving objects, including on a dynamic background.",
+    "Implement a restricted-zone intrusion alarm."
+  ],
+  "theory": [
+    "Background subtraction compares each frame from a fixed camera with a background model and labels every pixel as background or foreground. The model must follow illumination changes and represent backgrounds that move, such as leaves. The simplest model is a running average with learning rate $\\alpha$; a pixel is foreground when it differs from the model by more than $\\tau$. With one value per pixel it cannot represent a multi-modal background, and a moving object leaves a ghost trail.",
+    "$$B_t = (1 - \\alpha)\\, B_{t-1} + \\alpha\\, I_t, \\qquad F_t(x, y) = \\begin{cases} 1 & |I_t(x,y) - B_t(x,y)| > \\tau \\\\ 0 & \\text{otherwise} \\end{cases}$$",
+    "MOG2 models each pixel with a mixture of $K$ Gaussians. Components with high weight and low variance are background, and a value that matches none of them is foreground. Shadows are flagged with the value 127 so a threshold removes them. KNN keeps recent samples per pixel and calls a value background when at least $k$ samples lie within a distance threshold. Median filtering and morphology clean the masks, contours give the boxes, and a box with its foot point inside the polygon raises the alarm.",
+    "$$p(I_t) = \\sum_{k=1}^{K} w_k\\, \\mathcal{N}\\left(I_t;\\ \\mu_k, \\sigma_k^2\\right)$$"
+  ],
+  "tools": "Python 3.11, OpenCV 5.0 (accumulateWeighted, createBackgroundSubtractorMOG2, createBackgroundSubtractorKNN, morphologyEx, findContours, pointPolygonTest), NumPy, Matplotlib",
+  "dataset": "OpenCV sample videos vtest.avi (768 x 576, fixed camera, pedestrians; first 300 frames) and tree.avi (320 x 240, 68 frames of a tree swaying in the wind seen through a window, with a hand entering the view at about frame 53).",
+  "algorithm": [
+    "Feed every frame to the running-average differencer ($\\alpha = 0.02$, $\\tau = 30$), MOG2 and KNN (history 300, shadows on).",
+    "Threshold each raw mask at 255 to drop the shadow label, then apply median, opening, closing and dilation.",
+    "Find external contours, discard components below 400 px and compute the bounding boxes.",
+    "Record the foreground fraction, object count and processing time per frame and store background images at frames 30 and 300.",
+    "Repeat on tree.avi to compare the false foreground from moving leaves with the response to the hand.",
+    "Test the foot point of every MOG2 box against a restricted zone polygon with pointPolygonTest and raise alarms.",
+    "Draw masks, boxes, background images, plots and alarm frames."
+  ],
+  "code_file": "code/exp12_surveillance_bg_subtraction.py",
+  "figures": [
+    {
+      "file": "fig01_masks_comparison.png",
+      "caption": "Figure 12.1: Frame 120 of vtest.avi, raw and cleaned MOG2 masks, differencing and KNN masks, and the detected objects."
+    },
+    {
+      "file": "fig02_detections_grid.png",
+      "caption": "Figure 12.2: MOG2 bounding boxes at frames 60 to 299 and the number of objects per frame."
+    },
+    {
+      "file": "fig03_background_models.png",
+      "caption": "Figure 12.3: MOG2 background after 30 and 300 frames, the running-average background, and the foreground fraction over time."
+    },
+    {
+      "file": "fig04_dynamic_background_tree.png",
+      "caption": "Figure 12.4: Dynamic background test on tree.avi at frame 40 (no object) and frame 62 (hand) for the three methods."
+    },
+    {
+      "file": "fig05_zone_intrusion.png",
+      "caption": "Figure 12.5: Zone-intrusion alarm: the lawn polygon is green when clear and red with an ALARM label when entered."
+    }
+  ],
+  "results": [
+    "On 300 vtest.avi frames the differencer, MOG2 and KNN marked 2.61, 1.60 and 1.78 percent of the pixels as foreground and detected 5.90, 5.25 and 5.47 objects per frame at 162.6, 133.8 and 122.2 fps. MOG2 gave the tightest masks after shadow removal.",
+    "On tree.avi with no object present the false foreground was 1.02, 2.63 and 8.29 percent, with 1.45, 0.24 and 3.45 false boxes per frame. MOG2 separated the swaying leaves from the hand best.",
+    "The intrusion detector raised an alarm in 76 of 300 frames, the first at frame 82 when a person walks onto the lawn. Frames with nobody in the zone stayed clear."
+  ],
+  "conclusion": "MOG2 gave the fewest false boxes on the swaying tree and removed shadows, differencing left ghost trails, and KNN had not learned the background within the 68 available frames. The cleaned MOG2 mask gives the object boxes for the zone alarm directly."
+}

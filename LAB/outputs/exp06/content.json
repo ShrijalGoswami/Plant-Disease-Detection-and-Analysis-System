@@ -1,0 +1,56 @@
+{
+  "number": 6,
+  "title": "Implement Segmentation methods",
+  "aim": "To implement and compare segmentation by thresholding, colour clustering, region growing, marker-based watershed and GrabCut, and to apply these methods to leaf and lesion segmentation.",
+  "objectives": [
+    "Segment images with global, Otsu and adaptive thresholding.",
+    "Separate leaf and lesions with HSV colour ranges and cluster colours with K-means and mean shift.",
+    "Count touching objects with watershed and extract a foreground with GrabCut and region growing."
+  ],
+  "theory": [
+    "Segmentation partitions an image into homogeneous regions. Global thresholding labels every pixel below a fixed $T$. Otsu chooses $T$ by maximising the between-class variance $\\sigma_b^2(T)$, and adaptive thresholding subtracts a constant $C$ from the local mean, which copes with uneven lighting. In HSV space a range of hue, saturation and value selects one colour class, such as green leaf or brown lesion, and the ratio of lesion pixels to leaf pixels is a measure of disease severity.",
+    "$$\\sigma_b^2(T) = w_0(T)\\, w_1(T)\\, \\left[\\mu_0(T) - \\mu_1(T)\\right]^2, \\qquad T^* = \\arg\\max_T \\sigma_b^2(T)$$",
+    "K-means groups the pixel colours into $k$ clusters by minimising the compactness $J$. Mean shift moves each pixel to the mode of the local colour density. Region growing starts from a seed and adds neighbours whose value differs from it by less than $\\tau$. The watershed transform floods the inverted distance transform from markers, which splits touching objects. GrabCut models the colours with Gaussian mixtures and finds a minimum graph cut, starting from a rectangle around the object.",
+    "$$J = \\sum_{i=1}^{k} \\sum_{\\mathbf{p} \\in C_i} \\left\\| \\mathbf{p} - \\mathbf{m}_i \\right\\|^2$$"
+  ],
+  "tools": "Python 3.11, OpenCV 5.0, NumPy, Matplotlib",
+  "dataset": "PlantVillage leaf images (grape black rot for thresholding, colour and clustering methods, potato late blight for GrabCut and region growing) and the smarties.png sample image from OpenCV for watershed object counting.",
+  "algorithm": [
+    "Read the grape leaf image, resize to $512 \\times 512$, convert to grayscale and HSV.",
+    "Apply global ($T = 100$), Otsu and adaptive mean and Gaussian thresholds ($31 \\times 31$, $C = 5$).",
+    "Build the leaf mask with cv2.inRange (hue 15-95) and the brown lesion mask, then compute the lesion percentage.",
+    "Cluster RGB values with cv2.kmeans for $k = 2, 3, 4$; apply mean shift filtering and cluster again.",
+    "On the smarties image threshold the saturation, compute the distance transform, mark the peaks and run cv2.watershed.",
+    "Run GrabCut (rectangle, 5 iterations) on the potato leaf and grow a region from a seed on the Lab a-channel ($\\tau = 14$).",
+    "Compute the IoU of the two masks and save all figures."
+  ],
+  "code_file": "code/exp06_segmentation.py",
+  "figures": [
+    {
+      "file": "fig01_thresholding.png",
+      "caption": "Figure 6.1: Global ($T = 100$), Otsu ($T = 111$) and adaptive thresholding of the grape leaf image."
+    },
+    {
+      "file": "fig02_hsv_lesion_segmentation.png",
+      "caption": "Figure 6.2: HSV segmentation: hue and saturation channels, leaf mask, lesion mask and overlay (lesions 3.98 percent of the leaf)."
+    },
+    {
+      "file": "fig03_kmeans_meanshift.png",
+      "caption": "Figure 6.3: K-means clustering with $k = 2, 3, 4$, mean shift filtering and K-means on the mean shift output."
+    },
+    {
+      "file": "fig04_watershed.png",
+      "caption": "Figure 6.4: Marker based watershed on the smarties image: mask, distance transform, markers, labels and 14 segmented sweets."
+    },
+    {
+      "file": "fig05_grabcut_region_growing.png",
+      "caption": "Figure 6.5: GrabCut extraction of a potato leaf and seeded region growing. The masks agree with $\\mathrm{IoU} = 0.89$."
+    }
+  ],
+  "results": [
+    "Otsu selected $T = 111$ (30.0 percent dark pixels). The fixed $T = 100$ gave 23.9 percent, and the adaptive methods 39.8 and 37.6 percent because they also respond to the background texture.",
+    "The HSV leaf mask covered 45.2 percent of the image. The black rot lesions occupy 3.98 percent of the leaf area in 11 separate lesions. K-means reduced $J$ from $5.82 \\times 10^8$ ($k = 2$) to $2.38 \\times 10^8$ ($k = 4$).",
+    "Watershed separated 14 sweets, including the touching ones. GrabCut extracted the potato leaf as 42.9 percent of the image and region growing gave 40.2 percent; the IoU between the two masks is 0.886."
+  ],
+  "conclusion": "Thresholding needs a bimodal histogram, and on this leaf only the HSV colour ranges separated the leaf from its lesions and gave a severity measure. Region growing, watershed and GrabCut use connectivity and produced object masks without background speckle."
+}

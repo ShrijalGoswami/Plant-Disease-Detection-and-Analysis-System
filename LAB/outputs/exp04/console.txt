@@ -1,0 +1,5 @@
+Stereo pair loaded and scaled by 0.5: 641 x 555 pixels
+StereoBM  : time   15.5 ms, valid pixels  61.8 %, disparity min   3.2, max 103.7, mean  37.3 px
+StereoSGBM: time   38.4 ms, valid pixels  73.2 %, disparity min   0.7, max 105.4, mean  38.7 px
+Depth from SGBM (f = 1870 px, B = 160 mm, dmin = 135 px): near (1st percentile) 1421 mm, far (99th percentile) 1894 mm, median 1792 mm
+Figures written to E:\Plant-Disease-Detection-and-Analysis-System\LAB\outputs\exp04

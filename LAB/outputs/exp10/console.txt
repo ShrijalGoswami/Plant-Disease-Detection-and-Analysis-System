@@ -1,0 +1,6 @@
+Detector : Faster R-CNN ResNet-50 FPN v2 (COCO) on cuda, 151 frames of vtest.avi
+  mean inference time = 163.9 ms/frame (excluding warm-up frame), mean persons detected per frame = 6.36
+Tracker  : Kalman + Hungarian (IoU >= 0.3, confirm after 2 hits, delete after 5 misses)
+  unique confirmed tracks = 23, mean active tracks per frame = 6.08, max = 9
+MIL tracker vs detector on one person over 60 frames : mean IoU = 0.397, min IoU = 0.102, frames with IoU < 0.5 = 31
+Outputs written to E:\Plant-Disease-Detection-and-Analysis-System\LAB\outputs\exp10

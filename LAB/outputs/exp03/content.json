@@ -1,0 +1,53 @@
+{
+  "number": 3,
+  "title": "Implement Projection",
+  "aim": "To implement the perspective projection of 3D points onto the image plane with the pinhole model x = K [R | t] X, to compare it with orthographic projection and with cv2.projectPoints, and to use projection for augmented-reality overlays on calibrated images and for planar homographies.",
+  "objectives": [
+    "Project a 3D wireframe with $\\mathbf{x} = K[R\\,|\\,t]\\mathbf{X}$ in NumPy and verify the result against cv2.projectPoints.",
+    "Compare perspective with orthographic projection and estimate a pose with cv2.solvePnP for augmented reality.",
+    "Rectify a planar scene with a homography and synthesise a rotated view."
+  ],
+  "theory": [
+    "In the pinhole model a point $(X_c, Y_c, Z_c)$ is divided by its depth. That division produces foreshortening and vanishing points. In homogeneous coordinates the projection is linear, $\\mathbf{x} \\sim K [R\\,|\\,t] \\mathbf{X}$, and the camera centre is $C = -R^T t$.",
+    "$$u = f_x \\frac{X_c}{Z_c} + c_x, \\qquad v = f_y \\frac{Y_c}{Z_c} + c_y$$",
+    "Orthographic projection drops the depth, $u = s X_c + c_x$, $v = s Y_c + c_y$, so image size does not change with distance. The perspective-n-point problem (cv2.solvePnP) is the inverse: given known 3D points and their pixels it recovers $R$ and $t$. With that pose, a virtual object defined in the board frame can be projected into the photograph.",
+    "When the scene is a plane the projection reduces to a $3 \\times 3$ homography $H$ with eight degrees of freedom, fixed by four correspondences. A pure camera rotation is also a homography.",
+    "$$\\begin{bmatrix} u' \\\\ v' \\\\ 1 \\end{bmatrix} \\sim \\begin{bmatrix} h_{11} & h_{12} & h_{13} \\\\ h_{21} & h_{22} & h_{23} \\\\ h_{31} & h_{32} & 1 \\end{bmatrix} \\begin{bmatrix} u \\\\ v \\\\ 1 \\end{bmatrix}, \\qquad H_{\\mathrm{rot}} = K R K^{-1}$$"
+  ],
+  "tools": "Python 3.11, OpenCV 5.0, NumPy, Matplotlib; intrinsic parameters loaded from outputs/exp02/calibration.npz",
+  "dataset": "Synthetic 3D house wireframe (10 vertices, 17 edges); chessboard images left01, left03, left05 and left08 (640 x 480) and the sudoku.png photograph (558 x 563) from the OpenCV samples/data repository.",
+  "algorithm": [
+    "Load $K$ from the calibration experiment and define the house vertices in metres.",
+    "Build $R = R_x(115^\\circ) R_z(-35^\\circ)$ and $t = (0, 0, d)^T - R\\mathbf{X}_o$ for $d = 4$, 8 and 20 m.",
+    "Project the vertices in NumPy, scale $f$ by $d/6$ so the house keeps its image size, and compare with cv2.projectPoints.",
+    "Project the same pose orthographically and compare the front and back edge lengths of the house.",
+    "Solve the pose of four chessboard images with cv2.solvePnP and draw the board axes and a 75 mm cube.",
+    "Compute the homography from the sudoku corners to a $450 \\times 450$ square and rectify the image with cv2.warpPerspective.",
+    "Map the $9 \\times 9$ grid back with $H^{-1}$ and synthesise a 25 degree pan, 10 degree tilt view with $K R K^{-1}$."
+  ],
+  "code_file": "code/exp03_projection.py",
+  "figures": [
+    {
+      "file": "fig01_pinhole_projection.png",
+      "caption": "Figure 3.1: Perspective projection of the house (NumPy lines, cv2.projectPoints dots) at camera distances of 4, 8 and 20 m."
+    },
+    {
+      "file": "fig02_perspective_vs_orthographic.png",
+      "caption": "Figure 3.2: The same pose under perspective (left) and orthographic (right) projection."
+    },
+    {
+      "file": "fig03_ar_projection.png",
+      "caption": "Figure 3.3: Board axes and a 75 mm cube projected onto four views with the pose from cv2.solvePnP."
+    },
+    {
+      "file": "fig04_homography.png",
+      "caption": "Figure 3.4: Sudoku rectified by a homography, the grid mapped back with $H^{-1}$, and the view from a rotation-only homography."
+    }
+  ],
+  "results": [
+    "NumPy projection and cv2.projectPoints agree to $8.5 \\times 10^{-14}$ px. At $d = 4$ m the front edge of the house measures 250.0 px and the back edge 192.1 px, a ratio of 1.30. Under orthographic projection both edges are 229.0 px.",
+    "cv2.solvePnP returned $t = (-75.28, -108.94, 399.82)$ mm for left01.jpg, the same as the calibration extrinsics. The four board distances are 421, 336, 343 and 338 mm, and the cube sits on the board in every view.",
+    "$$H = \\begin{bmatrix} 1.1753 & 0.1061 & -94.7089 \\\\ 0.0451 & 1.2595 & -109.0918 \\\\ 0.0001 & 0.0004 & 1.0000 \\end{bmatrix}$$"
+  ],
+  "conclusion": "The hand-written projection matched OpenCV to machine precision, and foreshortening decreased with distance until the drawing approached the orthographic limit. A solvePnP pose placed a virtual cube on real photographs, and the homography rectified the sudoku grid and synthesised a rotated view."
+}

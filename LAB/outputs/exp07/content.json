@@ -1,0 +1,56 @@
+{
+  "number": 7,
+  "title": "Construct 3D model from defocus image",
+  "aim": "To recover the depth, and hence the shape, of a scene from the defocus blur in images taken at different focus settings, and to build a textured 3D surface from the recovered depth map.",
+  "objectives": [
+    "To understand how defocus blur encodes the distance from the plane of focus.",
+    "To implement shape from focus with the SML and variance-of-Laplacian measures and sub-slice interpolation.",
+    "To build an all-in-focus image and a textured 3D surface, and to try two-image depth from defocus."
+  ],
+  "theory": [
+    "A thin lens focuses a point at distance $u$ onto the sensor at distance $v$ when $1/u + 1/v = 1/F$. Points at other distances form a Gaussian blur whose $\\sigma$ grows with the distance from the focus plane, so blur carries depth.",
+    "$$\\frac{1}{u} + \\frac{1}{v} = \\frac{1}{F}, \\qquad \\sigma \\propto \\left| \\frac{1}{u} - \\frac{1}{u_0} \\right|$$",
+    "Shape from focus captures a focal stack of $N$ images at different focus settings. A focus measure such as the Sum-Modified-Laplacian (SML) or the variance of the Laplacian scores the local sharpness in every slice. The slice with the largest response gives each pixel's depth; a parabola fitted to the log of the three values around the peak refines it to a fraction of a slice. Copying each pixel from its sharpest slice gives an all-in-focus image. Depth from defocus needs only two images, because the ratio of their high-frequency energies depends on the relative blur.",
+    "$$\\text{SML}(x, y) = \\sum_{(i, j) \\in W} \\left( \\left| 2 I(i, j) - I(i - 1, j) - I(i + 1, j) \\right| + \\left| 2 I(i, j) - I(i, j - 1) - I(i, j + 1) \\right| \\right)$$"
+  ],
+  "tools": "Python 3.11, OpenCV 5.0 (GaussianBlur, filter2D, Laplacian, boxFilter, medianBlur), NumPy, Matplotlib (mplot3d)",
+  "dataset": "Synthetic focal stack of 15 slices (256 x 256 px) rendered from a PlantVillage tomato leaf image (class Tomato___Septoria_leaf_spot) with a known ground-truth depth map.",
+  "algorithm": [
+    "Load the leaf image, resize it to $256 \\times 256$ and define a ground-truth depth (a tilted plane plus a Gaussian hill).",
+    "Render 15 slices by blurring each pixel with $\\sigma = 0.7\\,|d - k|$ and adding sensor noise.",
+    "Compute the SML and variance-of-Laplacian focus measures of every slice in $7 \\times 7$ windows.",
+    "Take the slice of maximum response per pixel, refine it by log-parabolic interpolation, median filter and compare with the truth.",
+    "Build the all-in-focus image from the sharpest slice of every pixel.",
+    "Form the two-image ratio $E_0 / (E_0 + E_{14})$ of Laplacian energies and correlate it with the true depth.",
+    "Plot the stack, the focus curves, the depth and error maps, the textured 3D surface and the defocus ratio."
+  ],
+  "code_file": "code/exp07_shape_from_defocus.py",
+  "figures": [
+    {
+      "file": "fig01_focal_stack.png",
+      "caption": "Figure 7.1: Five slices of the synthetic focal stack (focus at 0, 3, 7, 10 and 14) and the ground-truth depth map."
+    },
+    {
+      "file": "fig02_focus_curves.png",
+      "caption": "Figure 7.2: Normalised SML focus curves of three pixels. Dashed lines mark the true depth, dotted lines the interpolated estimate."
+    },
+    {
+      "file": "fig03_depth_comparison.png",
+      "caption": "Figure 7.3: Ground-truth depth, the depths recovered with SML and with the variance of the Laplacian, absolute error maps and error histogram."
+    },
+    {
+      "file": "fig04_3d_surface.png",
+      "caption": "Figure 7.4: Ground-truth surface (left) and the recovered surface textured with the all-in-focus composite (right)."
+    },
+    {
+      "file": "fig05_allinfocus_and_dfd.png",
+      "caption": "Figure 7.5: A single slice against the all-in-focus composite, the two-image blur ratio and its relation to true depth (correlation -0.84)."
+    }
+  ],
+  "results": [
+    "SML recovered the depth with an RMSE of 0.349 and an MAE of 0.071 slices (99.8 % of the pixels within one slice). The variance of the Laplacian did better: RMSE 0.066 and MAE 0.050 slices, with every pixel within one slice.",
+    "The focus curves of three sample pixels peak at true depths of 2.42, 11.71 and 8.38 slices. The interpolated estimates were 2.37, 11.76 and 8.32 slices.",
+    "The all-in-focus composite has 3.38 times the mean SML of the middle slice. The two-image blur ratio correlates with the true depth with a coefficient of -0.838."
+  ],
+  "conclusion": "The position of maximum sharpness in a focal stack gives the depth of every textured pixel to a fraction of a slice, and together with the all-in-focus image it yields a textured 3D surface. The two-image defocus variant needs far fewer images but is less accurate."
+}

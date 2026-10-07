@@ -1,0 +1,19 @@
+Megamind.avi       :  270 frames,  4 shots detected,  6 database clips after splitting long shots
+Megamind_bugy.avi  :  270 frames,  7 shots detected,  8 database clips after splitting long shots
+vtest.avi          :  795 frames,  1 shots detected, 14 database clips after splitting long shots
+tree.avi           :   68 frames,  2 shots detected,  2 database clips after splitting long shots
+Database size = 30 clips
+
+Retrieval results (rank of the true clip out of 30, combined distance = 0.4 hist + 0.2 edge + 0.4 deep, each scaled by its mean)
+  central 80% crop           (true = Megamind.avi clip 2) :  hist rank 1  edge rank 2  deep rank 2  combined rank 1
+  brightness +40             (true = Megamind_bugy.avi clip 3) :  hist rank 3  edge rank 1  deep rank 1  combined rank 1
+  horizontal flip            (true = vtest.avi clip 4) :  hist rank 1  edge rank 7  deep rank 1  combined rank 1
+  80x60 + JPEG q20           (true = tree.avi clip 0) :  hist rank 1  edge rank 1  deep rank 1  combined rank 1
+  later frames of same shot  (true = Megamind.avi clip 4) :  hist rank 1  edge rank 1  deep rank 3  combined rank 1
+
+  feature      MRR    P@1   mean rank
+  hist        0.867  0.80   1.40
+  edge        0.729  0.60   2.40
+  deep        0.767  0.60   1.60
+  combined    1.000  1.00   1.00
+Outputs written to E:\Plant-Disease-Detection-and-Analysis-System\LAB\outputs\exp13

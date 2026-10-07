@@ -1,0 +1,25 @@
+Part A : sparse LK on vtest.avi frames 0-60 (initial corners = 400)
+  frame  0-> 1 : tracked=400  mean disp=0.61 px  moving(>0.5px)=41  mean disp of moving=5.64 px
+  frame 14->15 : tracked=400  mean disp=0.75 px  moving(>0.5px)=60  mean disp of moving=4.91 px
+  frame 29->30 : tracked=720  mean disp=0.39 px  moving(>0.5px)=71  mean disp of moving=3.68 px
+  frame 44->45 : tracked=1013  mean disp=0.36 px  moving(>0.5px)=116  mean disp of moving=2.86 px
+  frame 59->60 : tracked=1078  mean disp=1.14 px  moving(>0.5px)=146  mean disp of moving=8.26 px
+  average over 60 frames : tracked=802.8  mean disp=0.741 px  moving=102.2  moving disp=5.55 px
+Part B : dense flow on 20 consecutive vtest pairs (frames 100-120, 768x576)
+  Farneback : 180.0 ms/frame   mean |flow| = 0.231 px   max |flow| = 13.74 px
+  DIS       : 53.3 ms/frame   mean |flow| = 0.169 px   max |flow| = 12.46 px
+  Megamind pair 121->122 : mean |flow| = 0.64 px, max |flow| = 10.30 px
+Part C : NumPy LK vs OpenCV LK (single level, 21x21 window) on 10 points of the pair 100->101
+   x      y   |  NumPy (dx, dy)   |  OpenCV (dx, dy)  | diff px
+  514.0 188.0 |   3.70  -2.10     |   3.70  -2.10     | 0.004
+  361.0 248.0 |   4.99   1.48     |   4.99   1.48     | 0.001
+  224.0  87.0 |  -2.18   0.19     |  -2.18   0.19     | 0.006
+  229.0  66.0 |  -2.34   0.53     |  -2.34   0.54     | 0.002
+  497.0 184.0 |   1.73  -0.91     |   1.74  -0.91     | 0.002
+  507.0 155.0 |   1.42  -1.84     |   1.43  -1.84     | 0.003
+  396.0  34.0 |  -0.01  -0.00     |  -0.01  -0.00     | 0.000
+  403.0  35.0 |  -0.01  -0.00     |  -0.01  -0.00     | 0.000
+  432.0 201.0 |   0.06  -0.01     |   0.06  -0.01     | 0.000
+  425.0 201.0 |   0.07  -0.01     |   0.07  -0.01     | 0.001
+  mean absolute difference NumPy vs OpenCV = 0.002 px
+Figures written to E:\Plant-Disease-Detection-and-Analysis-System\LAB\outputs\exp09

@@ -20,3 +20,6 @@ Thumbs.db
 
 # Temporary files of the report build
 docs/_build/
+
+# LinkedIn post material (local only)
+Linkedin/

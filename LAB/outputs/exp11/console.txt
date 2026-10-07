@@ -1,0 +1,12 @@
+lena.jpg   Haar faces = 1, YuNet faces = 1
+messi5.jpg Haar faces = 1, YuNet faces = 1
+collage    Haar faces = 11 / 12, YuNet faces = 12 / 12
+PCA: 120 components explain 96.2 % of the variance
+Eigenfaces + SVM accuracy = 93.33 %  (112 / 120)
+Eigenfaces + 1-NN accuracy = 83.33 %
+LBP histogram + chi-square 1-NN accuracy = 95.83 %
+SFace lena.jpg vs messi5.jpg:             cosine = 0.130 -> NO MATCH (threshold 0.363)
+SFace subject 3, image 0 vs subject 3, image 7: cosine = 0.926 -> MATCH (threshold 0.363)
+SFace subject 3, image 0 vs subject 12, image 0: cosine = 0.204 -> NO MATCH (threshold 0.363)
+Confusion matrix (SVM): 33 subjects perfectly recognised, 8 misclassified test faces
+Saved figures to outputs/exp11

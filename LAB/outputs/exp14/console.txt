@@ -1,0 +1,11 @@
+C:\Users\Vansh\AppData\Local\Programs\Python\Python311\Lib\site-packages\timm\models\layers\__init__.py:49: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers
+  warnings.warn(f"Importing from {__name__} is deprecated, please import via timm.layers", FutureWarning)
+Using cache found in C:\Users\Vansh/.cache\torch\hub\rwightman_gen-efficientnet-pytorch_master
+Loading weights:  None
+MiDaS v2.1 small loaded on cuda; parameters: 21.3 M
+building : 868x600 px, inference 30.7 ms, inverse depth -56.9..996.8, relative depth 1.0..5.0, PLY points 130200
+home     : 512x384 px, inference 36.1 ms, inverse depth -81.9..784.3, relative depth 1.0..5.0, PLY points 49152
+leaf     : 256x256 px, inference 40.0 ms, inverse depth 54.2..952.1, relative depth 1.0..5.0, PLY points 16384
+Shape from shading (eikonal fast sweeping, 1.5 s): sphere radius 45 px, height RMSE 1.05 px (2.3 % of the radius) over 6312 pixels with E > 0.1
+Textured mesh of 'building': 18018 quads kept after removing depth discontinuities
+Figures written to E:\Plant-Disease-Detection-and-Analysis-System\LAB\outputs\exp14

@@ -1,0 +1,52 @@
+{
+  "number": 4,
+  "title": "Determine depth map from Stereo pair",
+  "aim": "To compute a dense disparity map from a rectified stereo pair with block matching and semi-global block matching, and to convert it into a depth map from the geometry of the rig.",
+  "objectives": [
+    "To understand the relation $Z = fB/d$ between depth and disparity for a rectified stereo pair.",
+    "To compute disparity maps with StereoBM and StereoSGBM and to see what the block size and disparity range change.",
+    "To convert the disparity map into metric depth."
+  ],
+  "theory": [
+    "A rectified stereo rig has two cameras a baseline $B$ apart with parallel optical axes. Corresponding points then lie on the same image row, and their column difference $d = x_L - x_R$ is the disparity. Similar triangles give the depth $Z = fB/d$, where $f$ is the focal length in pixels. One pixel of disparity error is about $Z^2/(fB)$ of depth error, so resolution worsens with the square of the distance.",
+    "$$Z = \\frac{f B}{d}, \\qquad d = x_L - x_R, \\qquad \\Delta Z \\approx \\frac{Z^2}{f B}\\, \\Delta d$$",
+    "Finding the matching pixel along the row is the correspondence problem. StereoBM compares small windows with the sum of absolute differences and keeps the cheapest disparity: fast, but noisy where the image has no texture. StereoSGBM adds a smoothness penalty, $P_1$ for a one-pixel change and $P_2$ for larger jumps, and minimises the energy by dynamic programming along several image directions, which gives denser, cleaner maps. Failed matches are marked invalid, and a median filter removes isolated errors.",
+    "$$E(D) = \\sum_{p} C(p, D_p) + \\sum_{q \\in N_p} P_1 \\left[ |D_p - D_q| = 1 \\right] + \\sum_{q \\in N_p} P_2 \\left[ |D_p - D_q| > 1 \\right]$$"
+  ],
+  "tools": "Python 3.11, OpenCV 5.0 (StereoBM, StereoSGBM), NumPy, Matplotlib",
+  "dataset": "Middlebury 2006 'Aloe' rectified stereo pair (data/aloeL.jpg and data/aloeR.jpg, 1282 x 1110 px, taken from the OpenCV sample data) processed at half resolution (641 x 555 px).",
+  "algorithm": [
+    "Read the left and right images, resize them to half resolution and convert to grayscale.",
+    "Compute the StereoBM disparity (numDisparities 112, blockSize 15) and divide the fixed-point result by 16.",
+    "Compute the StereoSGBM disparity (blockSize 5, $P_1 = 600$, $P_2 = 2400$, uniqueness ratio 10, 3-way mode).",
+    "Mark disparities $\\le 0$ as invalid and apply a $5 \\times 5$ median filter.",
+    "Repeat SGBM for blockSize 3, 7, 11 and for numDisparities 48, 80, 112.",
+    "Convert disparity to depth with $Z = fB/(d + d_{\\min})$, $f = 1870$ px, $B = 160$ mm, $d_{\\min} = 135$ px.",
+    "Plot the pair, both disparity maps, the parameter sweep and the depth map. Save the disparity for experiment 5."
+  ],
+  "code_file": "code/exp04_stereo_depth.py",
+  "figures": [
+    {
+      "file": "fig01_stereo_pair.png",
+      "caption": "Figure 4.1: Rectified Aloe stereo pair at half resolution. Corresponding points lie on the same row."
+    },
+    {
+      "file": "fig02_bm_vs_sgbm.png",
+      "caption": "Figure 4.2: StereoBM (left) and StereoSGBM (right) disparity maps. White pixels are invalid matches."
+    },
+    {
+      "file": "fig03_parameter_sweep.png",
+      "caption": "Figure 4.3: Effect of blockSize (top) and numDisparities (bottom) on the SGBM disparity map."
+    },
+    {
+      "file": "fig04_depth_and_histogram.png",
+      "caption": "Figure 4.4: Depth map from the SGBM disparity with $Z = fB/(d + d_{\\min})$, and the histogram of valid disparities."
+    }
+  ],
+  "results": [
+    "StereoBM returned valid disparities for 61.8 % of the pixels (3.2 to 103.7 px) in about 15 ms. StereoSGBM returned 73.2 % valid pixels (0.7 to 105.4 px) in about 38 ms at $641 \\times 555$.",
+    "SGBM is smoother on the cloth and the pot. BM leaves holes and wrong patches in the low-texture areas. Small blocks keep the thin leaf tips, and numDisparities must cover the largest true disparity of about 105 px: with 48 the near leaves are lost.",
+    "With $f = 1870$ px, $B = 160$ mm and $d_{\\min} = 135$ px the depth runs from 1421 mm to 1894 mm (1st to 99th percentile), with a median of 1792 mm."
+  ],
+  "conclusion": "Dense correspondence between the two images of a rectified pair gives a disparity map, and $Z = fB/d$ turns it into depth. Block matching is fast but fails without texture; semi-global matching costs about twice the time and gives a denser, cleaner map that converts directly to metric depth."
+}

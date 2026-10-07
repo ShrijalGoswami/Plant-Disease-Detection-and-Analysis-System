@@ -1,0 +1,5 @@
+# large downloaded sample data, model weights and regenerable binary outputs
+data/
+outputs/**/*.ply
+outputs/**/*.mp4
+outputs/**/*.npy
