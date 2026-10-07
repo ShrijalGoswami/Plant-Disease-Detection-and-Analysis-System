@@ -1,0 +1,51 @@
+{
+  "number": 5,
+  "title": "Construct 3D model from Stereo pair",
+  "aim": "To reconstruct a three-dimensional model of a scene, as a coloured point cloud and a triangle mesh, from the disparity map of a rectified stereo pair using the reprojection matrix Q.",
+  "objectives": [
+    "To derive the reprojection matrix $Q$ that maps pixel coordinates and disparity to 3D points.",
+    "To build a coloured point cloud and a triangle mesh from the disparity map and export a PLY file.",
+    "To view and interpret the reconstruction from several viewpoints."
+  ],
+  "theory": [
+    "For a rectified rig with focal length $f$, principal point $(c_x, c_y)$ and baseline $B$, a pixel $(x, y)$ with disparity $d$ maps to $X = (x - c_x)B/d$, $Y = (y - c_y)B/d$, $Z = fB/d$. In homogeneous coordinates these relations form the $4 \\times 4$ reprojection matrix $Q$, which cv2.reprojectImageTo3D applies to every pixel. With the left-image colour attached, the result is a point cloud, stored as a PLY file.",
+    "$$\\begin{bmatrix} X \\\\ Y \\\\ Z \\\\ W \\end{bmatrix} = Q \\begin{bmatrix} x \\\\ y \\\\ d \\\\ 1 \\end{bmatrix}, \\qquad Q = \\begin{bmatrix} 1 & 0 & 0 & -c_x \\\\ 0 & 1 & 0 & -c_y \\\\ 0 & 0 & 0 & f \\\\ 0 & 0 & 1/B & 0 \\end{bmatrix}$$",
+    "The points sit on the image grid, so each $2 \\times 2$ pixel block splits into two triangles; triangles that span a large depth jump are dropped. Faces take their colour from the texture or from a Lambertian shade $\\max(0, \\mathbf{n} \\cdot \\mathbf{l})$. The depth resolution is $\\Delta Z = Z^2/(fB)$ per disparity pixel, and the Middlebury offset $d_{\\min}$ has to be added before reprojection.",
+    "$$\\Delta Z = \\frac{Z^2}{f B}\\, \\Delta d$$"
+  ],
+  "tools": "Python 3.11, OpenCV 5.0 (reprojectImageTo3D, StereoSGBM), NumPy, Matplotlib (mplot3d, Poly3DCollection)",
+  "dataset": "SGBM disparity map and half-resolution left image of the Middlebury Aloe pair produced in experiment 4 (recomputed from data/aloeL.jpg and data/aloeR.jpg when the files are missing).",
+  "algorithm": [
+    "Load the SGBM disparity ($641 \\times 555$) and the left image; recompute them if they are missing.",
+    "Build $Q$ from $f = 1870$ px, $B = 160$ mm and the image centre; add $d_{\\min} = 135$ px.",
+    "Apply cv2.reprojectImageTo3D to get $(X, Y, Z)$ in millimetres and flip the $Y$ axis.",
+    "Mask invalid disparities and the 1 % farthest points, attach RGB colours and write aloe.ply.",
+    "Sub-sample the grid every 4th pixel, form two triangles per cell (depth span under 50 mm) and shade them.",
+    "Render the point cloud from two viewpoints, the textured and shaded mesh, and the top and side views."
+  ],
+  "code_file": "code/exp05_3d_from_stereo.py",
+  "figures": [
+    {
+      "file": "fig01_disparity_mask.png",
+      "caption": "Figure 5.1: SGBM disparity map (left) and the mask of pixels used for the reconstruction (right)."
+    },
+    {
+      "file": "fig02_point_cloud.png",
+      "caption": "Figure 5.2: Coloured 3D point cloud of the Aloe scene from two viewpoints (20 000 of 257 493 points)."
+    },
+    {
+      "file": "fig03_mesh.png",
+      "caption": "Figure 5.3: Grid triangle mesh (28 461 triangles), textured (left) and Lambertian shaded (right)."
+    },
+    {
+      "file": "fig04_top_side_views.png",
+      "caption": "Figure 5.4: Orthographic top ($X$-$Z$) and side ($Z$-$Y$) views; leaves, pot and background lie at different depths."
+    }
+  ],
+  "results": [
+    "257 493 valid 3D points (72.4 % of the pixels) were exported to aloe.ply. They span 1245 to 1893 mm in depth and -211 to 322 mm in width.",
+    "The mesh has 28 461 triangles on a $139 \\times 161$ grid. Dropping triangles with a depth span above 50 mm keeps the leaves separate from the background.",
+    "In the top and side views the individual leaves sit at different depths, the pot is at about 1.55 m and the background lies 0.2 to 0.6 m behind the plant. The depth steps of about 8 mm per disparity pixel are visible."
+  ],
+  "conclusion": "The reprojection matrix $Q$ turns every matched pixel into a metric 3D point, and the image grid supplies the mesh connectivity. Occlusions leave holes and disparity quantisation leaves depth steps, but the plant, pot and background all appear at their measured distances."
+}

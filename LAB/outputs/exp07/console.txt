@@ -1,0 +1,6 @@
+Texture: 002533c1-722b-44e5-9d2e-91f7747b2543___Keller.St_CG 1831.JPG; stack of 15 slices; ground-truth depth range 1.00 .. 11.87
+SML           : RMSE 0.349 slices, MAE 0.071 slices, pixels within 1 slice 99.8 %
+Var-Laplacian : RMSE 0.066 slices, MAE 0.050 slices, pixels within 1 slice 100.0 %
+All-in-focus image: mean SML 3.38 x that of the middle slice
+Two-image defocus ratio vs true depth: correlation coefficient -0.838
+Figures written to E:\Plant-Disease-Detection-and-Analysis-System\LAB\outputs\exp07

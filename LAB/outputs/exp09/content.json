@@ -1,0 +1,57 @@
+{
+  "number": 9,
+  "title": "Implement optical flow method",
+  "aim": "To estimate the apparent motion of image points between consecutive video frames with sparse (Lucas-Kanade) and dense (Farneback, DIS) optical flow, and to check the Lucas-Kanade solution against an implementation written from scratch.",
+  "objectives": [
+    "Track Shi-Tomasi corners through a video with pyramidal Lucas-Kanade and draw their tracks.",
+    "Compute dense Farneback and DIS optical flow and show it as a colour-wheel image and a vector field.",
+    "Solve the Lucas-Kanade least-squares problem in NumPy and compare the answer with OpenCV."
+  ],
+  "theory": [
+    "Optical flow is the 2D vector field $(u, v)$ of the apparent motion of each pixel between consecutive frames. Assuming constant brightness, a first-order Taylor expansion gives the flow constraint, one equation in two unknowns (aperture problem):",
+    "$$I(x, y, t) = I(x + u, y + v, t + 1) \\quad \\Rightarrow \\quad I_x u + I_y v + I_t = 0$$",
+    "Lucas-Kanade assumes constant flow inside a small window ($21 \\times 21$ pixels here). Stacking the window's constraints gives $A \\mathbf{v} = -\\mathbf{b}$ with $A = [I_x \\; I_y]$ and $\\mathbf{b} = I_t$, solved by least squares. $A^T A$ is the structure tensor, well conditioned only at corners, so tracking starts from Shi-Tomasi corners; a pyramid handles large motions.",
+    "$$\\mathbf{v} = \\begin{bmatrix} u \\\\ v \\end{bmatrix} = (A^T A)^{-1} A^T (-\\mathbf{b}), \\qquad A^T A = \\begin{bmatrix} \\sum I_x^2 & \\sum I_x I_y \\\\ \\sum I_x I_y & \\sum I_y^2 \\end{bmatrix}$$",
+    "Dense methods return a vector at every pixel. Farneback fits a quadratic polynomial to each neighbourhood; DIS matches patches on a coarse grid and refines variationally, several times faster. The field is shown as a quiver plot or an HSV image (hue $=$ direction, brightness $=$ magnitude)."
+  ],
+  "tools": "Python 3.11, OpenCV 5.0 (calcOpticalFlowPyrLK, goodFeaturesToTrack, calcOpticalFlowFarneback, DISOpticalFlow), NumPy, Matplotlib",
+  "dataset": "OpenCV sample videos vtest.avi (static surveillance camera, 768 x 576, 10 fps, walking pedestrians) and Megamind.avi (animation clip, 720 x 528) from the OpenCV samples/data repository.",
+  "algorithm": [
+    "Read the first 61 frames of vtest.avi in grayscale and detect up to 400 Shi-Tomasi corners in frame 0.",
+    "Track the corners with cv2.calcOpticalFlowPyrLK ($21 \\times 21$ window, 3 levels) and draw the tracks of points that move more than 0.5 px.",
+    "Every 15 frames save a snapshot and re-detect corners in regions that have none.",
+    "Compute Farneback and DIS (medium) flow on 20 consecutive frame pairs and record the run time and flow magnitudes.",
+    "Show the flow as an HSV colour-wheel image and a 16 px quiver plot, then repeat on a Megamind.avi pair.",
+    "Solve Lucas-Kanade in NumPy from the normal equations $A^T A \\mathbf{v} = -A^T I_t$ with iterative refinement.",
+    "Run OpenCV single-level LK on the same ten corners and compare the two results."
+  ],
+  "code_file": "code/exp09_optical_flow.py",
+  "figures": [
+    {
+      "file": "fig01_lk_tracks.png",
+      "caption": "Figure 9.1: Sparse Lucas-Kanade tracks on vtest.avi at frames 15, 30, 45 and 60. Coloured lines are the paths of moving corners."
+    },
+    {
+      "file": "fig02_farneback_vtest.png",
+      "caption": "Figure 9.2: Farneback flow between frames 100 and 101 of vtest.avi: input, HSV colour-wheel image and flow vectors magnified four times."
+    },
+    {
+      "file": "fig03_farneback_vs_dis.png",
+      "caption": "Figure 9.3: Farneback (left) and DIS medium (right) flow for the same pair, with run time per frame."
+    },
+    {
+      "file": "fig04_megamind_dense_flow.png",
+      "caption": "Figure 9.4: Farneback flow on Megamind.avi frames 121 to 122. The moving head gets one hue and the quiver plot shows its vectors."
+    },
+    {
+      "file": "fig05_numpy_vs_opencv_lk.png",
+      "caption": "Figure 9.5: NumPy Lucas-Kanade (red) and OpenCV single-level LK (cyan) on ten corners, arrows magnified six times."
+    }
+  ],
+  "results": [
+    "Sparse LK kept all 400 initial corners. With re-detection the count grew to 1078 by frame 60, an average of 802.8 per frame. About 102 points per frame moved more than 0.5 px, with a mean displacement of 5.55 px; these are the pedestrians. Over all points the mean displacement was 0.74 px.",
+    "On 20 pairs of $768 \\times 576$ frames Farneback took 180.0 ms per frame (mean 0.231 px, max 13.74 px). DIS took 53.3 ms (mean 0.169 px, max 12.46 px) and left a cleaner background. On the Megamind pair the mean flow was 0.64 px and the maximum 10.30 px.",
+    "The NumPy Lucas-Kanade solver agreed with OpenCV on all ten points. On a walking person both gave $(3.70, -2.10)$ px and on the static lamp post $(-0.01, 0.00)$ px. The mean absolute difference was 0.002 px."
+  ],
+  "conclusion": "Sparse Lucas-Kanade tracking recovers sub-pixel motion at textured corners, and both dense methods separate the walking people from the static background, DIS about three times faster than Farneback. The least-squares LK solution written by hand reproduced OpenCV to within 0.002 px."
+}

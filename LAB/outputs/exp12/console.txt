@@ -1,0 +1,10 @@
+vtest.avi (768x576), 300 frames, min blob area 400 px
+  Differencing : mean fg fraction = 0.0261   mean objects/frame = 5.90   162.6 fps (apply + clean-up)
+  MOG2         : mean fg fraction = 0.0160   mean objects/frame = 5.25   133.8 fps (apply + clean-up)
+  KNN          : mean fg fraction = 0.0178   mean objects/frame = 5.47   122.2 fps (apply + clean-up)
+tree.avi (320x240), 68 frames: swaying leaves, a hand enters at about frame 53
+  Differencing : mean fg fraction frames 20-52 (no object) = 0.0102   frames 55-67 (hand) = 0.1694   false boxes/frame (20-52) = 1.45
+  MOG2         : mean fg fraction frames 20-52 (no object) = 0.0263   frames 55-67 (hand) = 0.1305   false boxes/frame (20-52) = 0.24
+  KNN          : mean fg fraction frames 20-52 (no object) = 0.0829   frames 55-67 (hand) = 0.2482   false boxes/frame (20-52) = 3.45
+Zone intrusion (MOG2 boxes, foot point inside polygon): 76 of 300 frames raised an alarm, first alarm at frame 82
+Outputs written to E:\Plant-Disease-Detection-and-Analysis-System\LAB\outputs\exp12

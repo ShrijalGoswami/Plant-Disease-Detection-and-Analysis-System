@@ -1,0 +1,52 @@
+{
+  "number": 14,
+  "title": "Construct 3D model from single image",
+  "aim": "To build a 3D model of a scene from a single photograph by estimating a dense depth map with the MiDaS monocular depth network and back-projecting it through a pinhole camera model, and to show the classical shape-from-shading approach on a synthetic Lambertian sphere.",
+  "objectives": [
+    "To understand why depth from a single image is ill-posed and which cues make it solvable.",
+    "To run the MiDaS monocular depth network and convert its output into a textured mesh and a PLY point cloud.",
+    "To implement classical shape from shading for a Lambertian sphere."
+  ],
+  "theory": [
+    "A pinhole camera maps every point of a viewing ray to the same pixel, so depth is lost. A 3D model from one image needs extra assumptions (a reflectance model, texture, perspective cues or learned priors) and is known only up to scale.",
+    "For a Lambertian surface with albedo $\\rho$ lit from direction $\\mathbf{l}$, the irradiance is $E = \\rho\\, \\mathbf{n} \\cdot \\mathbf{l}$ with normal $\\mathbf{n} = (-p, -q, 1)/\\sqrt{1 + p^2 + q^2}$, $p = \\partial Z/\\partial x$, $q = \\partial Z/\\partial y$. With the light along the viewing direction this becomes the eikonal equation, solved by fast sweeping.",
+    "$$E = \\frac{1}{\\sqrt{1 + p^2 + q^2}} \\quad \\Longrightarrow \\quad \\left| \\nabla Z \\right| = \\sqrt{\\frac{1}{E^2} - 1}$$",
+    "MiDaS is a convolutional network trained with a scale- and shift-invariant loss; its output is a relative inverse depth map (bright means near). Normalising it to $n \\in [0, 1]$, mapping to a relative depth $Z$ and back-projecting with focal length $f = 1.2 W$ gives a point cloud, and the pixel grid turns it into a textured mesh.",
+    "$$X = \\frac{(u - c_x)\\, Z}{f}, \\qquad Y = \\frac{(v - c_y)\\, Z}{f}, \\qquad Z = \\frac{1}{0.2 + 0.8\\, n}$$"
+  ],
+  "tools": "Python 3.11, PyTorch 2.10 with CUDA (MiDaS v2.1 small via torch.hub, timm), OpenCV 5.0, NumPy, Matplotlib (mplot3d, Poly3DCollection)",
+  "dataset": "OpenCV sample photographs data/building.jpg (868 x 600) and data/home.jpg (512 x 384), one PlantVillage potato leaf image (Potato___Late_blight, 256 x 256), the MiDaS weights data/models/midas_v21_small_256.pt, and a synthetic 128 x 128 rendering of a Lambertian sphere of radius 45 px.",
+  "algorithm": [
+    "Load MiDaS v2.1 small with the local weights on the GPU, together with its input transform.",
+    "Run the network on each image, time it, and resample the inverse depth to the original image size.",
+    "Normalise to $n \\in [0, 1]$, set $Z = 1/(0.2 + 0.8n)$, back-project with $f = 1.2W$ and write a coloured PLY.",
+    "Sub-sample the grid, form quadrilaterals, drop sky cells and cells with depth jumps above 10 %, and render the textured mesh.",
+    "Render a Lambertian sphere lit from the camera, compute the slowness $\\sqrt{1/E^2 - 1}$ and solve the eikonal equation by fast sweeping.",
+    "Recover the height $Z = r - T$, compare it with the true sphere (RMSE) and plot the maps and the 3D surface."
+  ],
+  "code_file": "code/exp14_3d_from_single_image.py",
+  "figures": [
+    {
+      "file": "fig01_midas_depth.png",
+      "caption": "Figure 14.1: Input photographs (top) and MiDaS inverse depth maps (bottom, bright means near)."
+    },
+    {
+      "file": "fig02_textured_surface.png",
+      "caption": "Figure 14.2: Textured 3D mesh of the building from the MiDaS depth and an assumed pinhole camera (18 018 quadrilaterals)."
+    },
+    {
+      "file": "fig03_point_clouds.png",
+      "caption": "Figure 14.3: Coloured point clouds of the home and leaf images (30 000 points shown for each)."
+    },
+    {
+      "file": "fig04_shape_from_shading.png",
+      "caption": "Figure 14.4: Shape from shading on a Lambertian sphere: input, true height, recovered height (RMSE 1.05 px) and the 3D surface."
+    }
+  ],
+  "results": [
+    "MiDaS v2.1 small (21.3 million parameters) predicted inverse depth in 31 to 40 ms per image on the RTX 3050 GPU. The values are relative, with unknown scale and shift.",
+    "Back-projection produced point clouds of 130 200, 49 152 and 16 384 vertices, and a textured mesh of the building with 18 018 quadrilaterals and no streaks between near and far surfaces.",
+    "Shape from shading recovered the sphere height with an RMSE of 1.05 px (2.3 % of the 45 px radius) over 6 312 pixels in 1.5 s. The errors grow only near the silhouette."
+  ],
+  "conclusion": "Shape from shading recovers the shape when the reflectance and the lighting are known, as on the sphere, and the MiDaS depth map produced textured meshes and point clouds for the three test photographs. In both cases the absolute scale and the occluded back sides stay unknown."
+}

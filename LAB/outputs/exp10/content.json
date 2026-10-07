@@ -1,0 +1,53 @@
+{
+  "number": 10,
+  "title": "Implement object detection and tracking from video",
+  "aim": "To detect people in every frame of a surveillance video with a deep convolutional detector and to link the detections over time into object tracks with a Kalman filter based multi-object tracker.",
+  "objectives": [
+    "Apply a pre-trained Faster R-CNN detector to video frames and measure its speed and detection count.",
+    "Write a SORT-style tracker (one Kalman filter per object, Hungarian association on IoU) that keeps persistent IDs.",
+    "Compare a model-free single-object tracker (OpenCV MIL) with tracking-by-detection."
+  ],
+  "theory": [
+    "Object detection returns a bounding box and a score for every object of a class. Tracking links the detections over time so that each object keeps one identity. Faster R-CNN is a two-stage detector. A ResNet-50 FPN backbone computes features, a Region Proposal Network proposes boxes, and a second head classifies and refines them. Only the COCO class person with a score above 0.6 is kept.",
+    "In tracking-by-detection (SORT) each track has a state $\\mathbf{x} = (c_x, c_y, w, h, v_x, v_y)$. A constant-velocity Kalman filter predicts the state and the matched detection corrects it through the Kalman gain:",
+    "$$\\hat{\\mathbf{x}}_{k}^{-} = F \\hat{\\mathbf{x}}_{k-1}, \\quad P_k^{-} = F P_{k-1} F^T + Q, \\quad K = P_k^{-} H^T \\left( H P_k^{-} H^T + R \\right)^{-1}, \\quad \\hat{\\mathbf{x}}_k = \\hat{\\mathbf{x}}_k^{-} + K (\\mathbf{z}_k - H \\hat{\\mathbf{x}}_k^{-})$$",
+    "Predictions and detections are matched by the Hungarian algorithm on an IoU cost. Matches below $\\text{IoU} = 0.3$ are rejected. A track is confirmed after two hits and deleted after five misses. Model-free trackers such as MIL need only an initial box, but they can drift after an occlusion.",
+    "$$\\text{IoU}(A, B) = \\frac{|A \\cap B|}{|A \\cup B|}, \\qquad \\text{cost}_{ij} = 1 - \\text{IoU}(\\hat{\\mathbf{b}}_i, \\mathbf{z}_j)$$"
+  ],
+  "tools": "Python 3.11, PyTorch 2.10 + torchvision 0.25 (fasterrcnn_resnet50_fpn_v2, COCO weights, CUDA GPU), OpenCV 5.0 (KalmanFilter, TrackerMIL, VideoWriter), SciPy (linear_sum_assignment), NumPy, Matplotlib",
+  "dataset": "OpenCV sample video vtest.avi (768 x 576, 10 fps, fixed surveillance camera with walking pedestrians); the first 151 frames are processed. Detector weights: torchvision Faster R-CNN ResNet-50 FPN v2 trained on COCO 2017.",
+  "algorithm": [
+    "Load the COCO pre-trained Faster R-CNN ResNet-50 FPN v2 model on the GPU with a score threshold of 0.6.",
+    "Run the detector on 151 frames of vtest.avi, keep the person boxes and record the inference time.",
+    "Predict every track with its constant-velocity Kalman filter.",
+    "Build the IoU matrix between predictions and detections and solve the assignment with the Hungarian algorithm ($\\text{IoU} \\ge 0.3$).",
+    "Update the matched tracks, start tentative tracks for unmatched detections (confirmed after 2 hits) and delete tracks after 5 misses.",
+    "Draw IDs, boxes and 40-frame trails and write the annotated video.",
+    "Initialise cv2.TrackerMIL on one person in frame 0, run it for 60 frames and plot its IoU with the detector box."
+  ],
+  "code_file": "code/exp10_detection_tracking.py",
+  "figures": [
+    {
+      "file": "fig01_detections.png",
+      "caption": "Figure 10.1: Faster R-CNN person detections with confidence scores on frames 0, 50, 100 and 150 of vtest.avi."
+    },
+    {
+      "file": "fig02_tracking_grid.png",
+      "caption": "Figure 10.2: Kalman + Hungarian multi-object tracker at frames 25 to 150. Each confirmed track keeps its colour, ID and a 40-frame trail."
+    },
+    {
+      "file": "fig03_tracks_per_frame.png",
+      "caption": "Figure 10.3: Persons detected per frame and active confirmed tracks over 151 frames. The track count follows the detections with a short delay."
+    },
+    {
+      "file": "fig04_mil_vs_detector.png",
+      "caption": "Figure 10.4: MIL tracker (cyan) and the detector box (green). The IoU falls to about 0.13 after the person passes the sign board."
+    }
+  ],
+  "results": [
+    "Faster R-CNN processed the $768 \\times 576$ frames on the RTX 3050 in 163.9 ms per frame. It found 6.36 persons per frame with scores of 0.99 to 1.00, and it also picked up the small distant pedestrians.",
+    "The Kalman + Hungarian tracker produced 23 unique confirmed tracks over 151 frames, with 6.08 active tracks per frame on average and a maximum of 9. Occlusions behind the lamp post occasionally split a track into a new ID.",
+    "The MIL tracker reached a mean IoU of 0.397 against the detector box, with a minimum of 0.102. It stayed on the person while the person was visible (IoU 0.5 to 0.87 for 31 frames) and then drifted onto the sign board after an occlusion."
+  ],
+  "conclusion": "The deep detector finds the people in every frame, and the Kalman filter with Hungarian association joins those detections into trajectories with stable IDs. MIL loses the person after an occlusion because it only has its initial box, whereas tracking-by-detection recovers because every frame is detected afresh."
+}

@@ -1,0 +1,53 @@
+{
+  "number": 2,
+  "title": "Implement camera calibration methods",
+  "aim": "To estimate the intrinsic parameters, lens distortion coefficients and extrinsic poses of a camera from several views of a planar chessboard with Zhang's method, and to check the result with the reprojection error and an undistorted image.",
+  "objectives": [
+    "Detect chessboard corners and refine them to sub-pixel accuracy.",
+    "Estimate $K$ and the distortion coefficients with cv2.calibrateCamera and check the reprojection error.",
+    "Undistort an image and save the calibration for later experiments."
+  ],
+  "theory": [
+    "A camera maps a world point $\\mathbf{X}$ to a pixel $\\mathbf{x}$ by $\\mathbf{x} \\sim K [R\\,|\\,t] \\mathbf{X}$. $K$ holds the focal lengths $f_x, f_y$, the principal point $(c_x, c_y)$ and the skew $s$. $[R\\,|\\,t]$ is the pose of one view.",
+    "$$\\begin{bmatrix} u \\\\ v \\\\ 1 \\end{bmatrix} \\sim K \\left[ R \\,|\\, t \\right] \\begin{bmatrix} X \\\\ Y \\\\ Z \\\\ 1 \\end{bmatrix}, \\qquad K = \\begin{bmatrix} f_x & s & c_x \\\\ 0 & f_y & c_y \\\\ 0 & 0 & 1 \\end{bmatrix}$$",
+    "Real lenses add radial ($k_1, k_2, k_3$) and tangential ($p_1, p_2$) distortion, applied to normalised coordinates. A negative $k_1$ means barrel distortion.",
+    "$$x_{d} = x \\left( 1 + k_1 r^2 + k_2 r^4 + k_3 r^6 \\right) + 2 p_1 x y + p_2 \\left( r^2 + 2 x^2 \\right), \\qquad r^2 = x^2 + y^2$$",
+    "Zhang's method needs a planar chessboard photographed in at least three orientations. Each view gives a homography $H = K[r_1 \\; r_2 \\; t]$, and the orthonormality of $r_1$ and $r_2$ fixes $K$ in closed form. A Levenberg-Marquardt refinement then minimises the RMS reprojection error of the corners. cv2.undistort resamples the image with the recovered coefficients."
+  ],
+  "tools": "Python 3.11, OpenCV 5.0 (calib3d module), NumPy, Matplotlib",
+  "dataset": "13 grayscale JPEG images (640 x 480) of a 9 x 6 inner-corner chessboard, left01.jpg to left14.jpg from the OpenCV samples/data repository; the square size is taken as 25 mm.",
+  "algorithm": [
+    "Define the 54 inner corners of the board in its own frame ($X$, $Y$ multiples of 25 mm, $Z = 0$).",
+    "Detect the corners in each image with cv2.findChessboardCorners and refine them with cv2.cornerSubPix.",
+    "Call cv2.calibrateCamera on all views to obtain the RMS error, $K$, the distortion vector and the poses.",
+    "Reproject the corners with cv2.projectPoints, compute the error of each image and derive the field of view.",
+    "Convert the rotation vector of view 1 with cv2.Rodrigues and compute the camera centre $C = -R^T t$.",
+    "Undistort left01.jpg with cv2.undistort and again with initUndistortRectifyMap and remap, and measure the pixel displacement.",
+    "Save the calibration to outputs/exp02/calibration.npz and plot the corners, errors, undistortion and camera poses."
+  ],
+  "code_file": "code/exp02_camera_calibration.py",
+  "figures": [
+    {
+      "file": "fig01_corners.png",
+      "caption": "Figure 2.1: Detected and sub-pixel refined chessboard corners in six of the 13 calibration views."
+    },
+    {
+      "file": "fig02_reprojection_error.png",
+      "caption": "Figure 2.2: RMS reprojection error of each image; the dashed line is the overall RMS of 0.409 px."
+    },
+    {
+      "file": "fig03_undistortion.png",
+      "caption": "Figure 2.3: Original image, undistorted image ($\\alpha = 1$), their difference and the displacement map of the distortion (up to 18.1 px)."
+    },
+    {
+      "file": "fig04_camera_poses.png",
+      "caption": "Figure 2.4: Estimated camera poses of the 13 views drawn as frustums in the chessboard frame."
+    }
+  ],
+  "results": [
+    "All 13 images were accepted. The RMS reprojection error is 0.4087 px, with $f_x = 536.07$ px, $f_y = 536.02$ px, principal point $(342.37, 235.54)$ px, $k_1 = -0.2651$, $k_2 = -0.0467$, $p_1 = 0.0018$, $p_2 = -0.0003$ and $k_3 = 0.2523$. The negative $k_1$ means barrel distortion.",
+    "The field of view is $61.6^\\circ \\times 48.2^\\circ$, a focal length of 4.02 mm for a $4.8 \\times 3.6$ mm sensor. Per-image errors lie between 0.16 and 0.30 px, except left13.jpg at 0.46 px and left02.jpg at 1.22 px. left01.jpg is 421.2 mm from the board, with $t = (-75.28, -108.94, 399.82)$ mm.",
+    "Undistortion moves pixels by 12.57 px on average and by 18.10 px at the corners. cv2.undistort and the remap route differ by at most 4 grey levels."
+  ],
+  "conclusion": "Zhang's method recovered $K$, the distortion coefficients and all 13 poses with an RMS error of 0.41 px. The camera positions are plausible, the board edges are straight after undistortion, and the saved calibration is reused in experiments 3 and 8."
+}

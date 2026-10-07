@@ -1,0 +1,55 @@
+{
+  "number": 1,
+  "title": "Implement image preprocessing and Edge detection",
+  "aim": "To implement the basic preprocessing operations (colour conversion, resizing, histogram equalisation, smoothing, sharpening and morphology) and to detect edges with the Sobel, Prewitt, Roberts, Laplacian, LoG and Canny operators in OpenCV.",
+  "objectives": [
+    "Improve contrast with histogram equalisation and CLAHE.",
+    "Remove Gaussian and salt-and-pepper noise with Gaussian, median and bilateral filters and measure the PSNR.",
+    "Detect edges with Sobel, Prewitt, Roberts, Laplacian, LoG and Canny."
+  ],
+  "theory": [
+    "Preprocessing converts the BGR image to grayscale, resizes it and improves the contrast. Histogram equalisation maps each intensity through the cumulative distribution, so the output histogram is nearly flat. CLAHE does the same per tile with a clip limit, which keeps noise from being amplified as much. A Gaussian filter suppresses Gaussian noise but blurs edges. The median filter removes impulse noise, and the bilateral filter smooths flat regions but leaves edges alone. Filter quality is measured with the peak signal-to-noise ratio (PSNR).",
+    "$$\\mathrm{PSNR} = 10 \\log_{10} \\frac{255^2}{\\mathrm{MSE}}, \\qquad \\mathrm{MSE} = \\frac{1}{MN}\\sum_{x,y}\\left(f(x,y) - g(x,y)\\right)^2$$",
+    "Edges are found from derivatives. Sobel, Prewitt and Roberts estimate the gradient components $G_x$ and $G_y$ with small kernels. The Laplacian is a second derivative whose zero crossings mark edges; because it amplifies noise it is combined with Gaussian smoothing (LoG). Canny smooths the image, computes the gradient, keeps only local maxima along the gradient direction and then applies two hysteresis thresholds. The result is a set of thin, connected edges.",
+    "$$G = \\sqrt{G_x^2 + G_y^2}, \\qquad \\theta = \\operatorname{atan2}(G_y, G_x)$$"
+  ],
+  "tools": "Python 3.11, OpenCV 5.0, NumPy, Matplotlib",
+  "dataset": "A grape leaf with black rot lesions from the PlantVillage dataset (256 x 256, resized to 512 x 512) and the standard lena.jpg test image from the OpenCV samples.",
+  "algorithm": [
+    "Read the leaf image, convert BGR to RGB and grayscale, resize to $512 \\times 512$.",
+    "Apply histogram equalisation and CLAHE (clip 2, $8 \\times 8$ tiles); plot histograms and contrast statistics.",
+    "Apply Gaussian blur, unsharp-mask sharpening and morphological opening and closing.",
+    "Add Gaussian ($\\sigma = 20$) and salt-and-pepper noise, denoise with Gaussian, median and bilateral filters and compute the PSNR.",
+    "Compute Sobel, Prewitt, Roberts, Laplacian and LoG responses and their edge-pixel percentages.",
+    "Run Canny with thresholds (30, 90), (60, 160) and (120, 260) on the leaf and lena and save the figures."
+  ],
+  "code_file": "code/exp01_preprocessing_edges.py",
+  "figures": [
+    {
+      "file": "fig01_preprocessing_grid.png",
+      "caption": "Figure 1.1: Preprocessing of the grape leaf: original, grayscale, equalised, CLAHE, Gaussian blur, sharpening, opening and closing."
+    },
+    {
+      "file": "fig02_histograms.png",
+      "caption": "Figure 1.2: Grayscale, equalised and CLAHE images with their histograms."
+    },
+    {
+      "file": "fig03_denoising_psnr.png",
+      "caption": "Figure 1.3: Gaussian (top) and salt-and-pepper (bottom) noise filtered with Gaussian, median and bilateral filters. PSNR in the titles."
+    },
+    {
+      "file": "fig04_edge_detectors.png",
+      "caption": "Figure 1.4: Edge responses of Sobel X, Sobel Y, Sobel magnitude, Prewitt, Roberts, Laplacian, LoG and Canny."
+    },
+    {
+      "file": "fig05_canny_thresholds.png",
+      "caption": "Figure 1.5: Effect of the Canny hysteresis thresholds on the leaf and lena images."
+    }
+  ],
+  "results": [
+    "Histogram equalisation raised the grayscale standard deviation from 42.8 to 73.8 and the 5-95 percentile range from 149 to 230. CLAHE gave 53.5 and 182, with less noise amplification.",
+    "For Gaussian noise (input 22.17 dB) the Gaussian filter was best at 28.96 dB. For salt-and-pepper noise (input 17.84 dB) the median filter was best at 27.91 dB; the bilateral filter reached only 21.15 dB.",
+    "Edge pixels at 25 percent of the maximum response: Sobel 6.44, Prewitt 6.43, Roberts 5.97, LoG 4.00 and Laplacian 1.74 percent. Canny gave 24.84, 6.61 and 1.67 percent for the thresholds (30, 90), (60, 160) and (120, 260)."
+  ],
+  "conclusion": "Equalisation and CLAHE improve contrast, the Gaussian filter suits Gaussian noise and the median filter suits impulse noise. Canny gives the thinnest edges, and its hysteresis thresholds set how much detail survives against the noise."
+}

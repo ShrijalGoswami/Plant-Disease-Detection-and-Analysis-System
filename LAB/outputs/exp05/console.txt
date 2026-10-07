@@ -1,0 +1,5 @@
+Image 641 x 555; valid 3D points: 257493 (72.4 % of pixels)
+Depth range kept: 1245 .. 1893 mm, width span -211 .. 322 mm
+Point cloud written: aloe.ply with 257493 coloured vertices
+Mesh: 28461 triangles on a 139 x 161 vertex grid (step 4)
+Figures written to E:\Plant-Disease-Detection-and-Analysis-System\LAB\outputs\exp05

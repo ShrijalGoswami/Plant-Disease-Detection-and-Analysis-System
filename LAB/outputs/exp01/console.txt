@@ -1,0 +1,28 @@
+Original leaf image shape: (256, 256, 3) dtype: uint8
+Resized to: (512, 512, 3)  grayscale mean = 127.2, std = 42.8
+gray       mean =  127.2  std =  42.8  contrast (p95-p5) = 149
+equalised  mean =  128.4  std =  73.8  contrast (p95-p5) = 230
+CLAHE      mean =  130.8  std =  53.5  contrast (p95-p5) = 182
+Gaussian noise (sigma 20)  -> Gaussian 5x5   PSNR = 28.96 dB
+Gaussian noise (sigma 20)  -> Median 5x5     PSNR = 26.86 dB
+Gaussian noise (sigma 20)  -> Bilateral d=9  PSNR = 27.17 dB
+Salt & pepper (6%)         -> Gaussian 5x5   PSNR = 26.81 dB
+Salt & pepper (6%)         -> Median 5x5     PSNR = 27.91 dB
+Salt & pepper (6%)         -> Bilateral d=9  PSNR = 21.15 dB
+
+Edge pixel percentage (a pixel is an edge if |response| > 25 % of the maximum response):
+  Sobel X           3.77 %
+  Sobel Y           2.68 %
+  Sobel magnitude   6.44 %
+  Prewitt           6.43 %
+  Roberts           5.97 %
+  Laplacian         1.74 %
+  LoG (sigma 2)     4.00 %
+  Canny (60,160)    2.35 %
+Canny Leaf  thresholds ( 30, 90): edge pixels = 24.84 %
+Canny Leaf  thresholds ( 60,160): edge pixels =  6.61 %
+Canny Leaf  thresholds (120,260): edge pixels =  1.67 %
+Canny Lena  thresholds ( 30, 90): edge pixels =  7.91 %
+Canny Lena  thresholds ( 60,160): edge pixels =  5.00 %
+Canny Lena  thresholds (120,260): edge pixels =  2.50 %
+Saved figures to outputs/exp01

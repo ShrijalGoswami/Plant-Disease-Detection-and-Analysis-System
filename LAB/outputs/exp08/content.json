@@ -1,0 +1,53 @@
+{
+  "number": 8,
+  "title": "Construct 3D model from Images",
+  "aim": "To reconstruct a sparse, coloured 3D model of a scene from ordinary photographs taken from different viewpoints, using feature matching, pose estimation from the essential matrix, triangulation and the registration of further views.",
+  "objectives": [
+    "Match SIFT features between photographs and reject wrong matches with the ratio test and RANSAC.",
+    "Recover the relative pose from the essential matrix $E$, triangulate the matches and add a third view with PnP.",
+    "Evaluate the model by its reprojection error and by comparison with the supplied camera matrices."
+  ],
+  "theory": [
+    "Structure from motion recovers the 3D scene and the camera poses from overlapping images. Features are matched, the relative camera geometry is estimated from the matches, and the matched points are triangulated. SIFT descriptors are matched by Euclidean distance and kept only when they pass Lowe's ratio test $d_1 / d_2 < 0.8$.",
+    "Two calibrated views are related by the essential matrix $E = [t]_\\times R$ through the epipolar constraint. RANSAC estimates $E$ from the matches (cv2.findEssentialMat), and cv2.recoverPose decomposes it into $R$ and $t$ up to scale.",
+    "$$\\mathbf{x}_2^T E \\, \\mathbf{x}_1 = 0, \\qquad E = [t]_\\times R = \\begin{bmatrix} 0 & -t_z & t_y \\\\ t_z & 0 & -t_x \\\\ -t_y & t_x & 0 \\end{bmatrix} R$$",
+    "With $P_1 = K[I\\,|\\,0]$ and $P_2 = K[R\\,|\\,t]$, each match gives a linear system whose null vector is the 3D point (cv2.triangulatePoints). A point is accepted when its reprojection error $e = \\| \\mathbf{x} - \\hat{\\mathbf{x}} \\|$ is small. Further views are registered with PnP on the reconstructed points and add new triangulations.",
+    "$$\\begin{bmatrix} u_1 \\mathbf{p}_1^{3T} - \\mathbf{p}_1^{1T} \\\\ v_1 \\mathbf{p}_1^{3T} - \\mathbf{p}_1^{2T} \\\\ u_2 \\mathbf{p}_2^{3T} - \\mathbf{p}_2^{1T} \\\\ v_2 \\mathbf{p}_2^{3T} - \\mathbf{p}_2^{2T} \\end{bmatrix} \\mathbf{X} = 0$$"
+  ],
+  "tools": "Python 3.11, OpenCV 5.0 (SIFT, findEssentialMat, recoverPose, triangulatePoints, solvePnPRansac), NumPy, Matplotlib",
+  "dataset": "Three colour photographs (1024 x 768) 001.jpg, 002.jpg and 003.jpg of the Wadham College courtyard from the Oxford Visual Geometry Group multi-view data set (robots.ox.ac.uk/~vgg/data/mview); the supplied 3 x 4 camera matrices are used only to obtain K and to check the estimated poses.",
+  "algorithm": [
+    "Load three images and the supplied projection matrices, and decompose them into a shared $K$ and ground-truth poses.",
+    "Detect up to 8000 SIFT keypoints per image and match views 1-2 with a brute-force matcher and a ratio test of 0.8.",
+    "Estimate $E$ with cv2.findEssentialMat (RANSAC), recover $R$ and $t$ with cv2.recoverPose and scale $t$ to the known baseline.",
+    "Triangulate the inliers from $P_1$ and $P_2$ and keep the points with positive depth and a reprojection error below 2 px.",
+    "Register view 3 with cv2.solvePnPRansac on its matches to known 3D points and triangulate its remaining matches.",
+    "Remove points with parallax below $1^\\circ$ or outside the 1-99 percentile box and save a coloured PLY file.",
+    "Draw the inlier matches, the epipolar lines, two views of the point cloud with the cameras, and the error histogram."
+  ],
+  "code_file": "code/exp08_sfm_from_images.py",
+  "figures": [
+    {
+      "file": "fig01_sift_matches.png",
+      "caption": "Figure 8.1: SIFT matches between views 1 and 2 that passed the ratio test and essential-matrix RANSAC (124 of 1733 drawn)."
+    },
+    {
+      "file": "fig02_epipolar_lines.png",
+      "caption": "Figure 8.2: Epipolar lines from the estimated $E$ for twelve inlier points; each point lies on the line of its match."
+    },
+    {
+      "file": "fig03_point_cloud.png",
+      "caption": "Figure 8.3: The sparse model of 2383 coloured points with the three camera positions, in oblique and plan views."
+    },
+    {
+      "file": "fig04_errors_and_counts.png",
+      "caption": "Figure 8.4: Reprojection error histogram (mean 0.20 px) and model size after each reconstruction stage."
+    }
+  ],
+  "results": [
+    "SIFT found 5998, 5872 and 5956 keypoints in the three images. Of the 2107 ratio-test matches between views 1 and 2, 1735 were essential-matrix inliers, and their triangulation had a mean reprojection error of 0.164 px.",
+    "The estimated pose differs from the ground truth by $0.19^\\circ$ in rotation and $1.07^\\circ$ in translation direction. View 3, registered with 730 PnP inliers, differs by $0.24^\\circ$ and $3.36^\\circ$ and added 792 points.",
+    "After 142 outliers were removed the model holds 2383 coloured points, with a mean reprojection error of 0.199 px and a median parallax of $10.85^\\circ$. The plan view shows the two wings of the courtyard."
+  ],
+  "conclusion": "Three photographs were enough to reconstruct a sparse 3D model of a real building, with camera poses within a fraction of a degree of the ground truth. The model is known only up to scale; bundle adjustment and dense matching would complete it."
+}

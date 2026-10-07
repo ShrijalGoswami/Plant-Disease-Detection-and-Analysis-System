@@ -1,0 +1,28 @@
+Intrinsic matrix K:
+ [[536.0735   0.     342.3705]
+ [  0.     536.0164 235.5369]
+ [  0.       0.       1.    ]]
+Rotation from Euler angles (rx=115, rz=-35):
+ [[ 0.8192  0.5736  0.    ]
+ [ 0.2424 -0.3462 -0.9063]
+ [-0.5198  0.7424 -0.4226]]
+camera centre in world coordinates for d = 4.0 m: [ 2.08 -2.97  2.89]
+distance  4.0 m, f =   357.4 px: max |manual - cv2.projectPoints| = 8.53e-14 px
+camera centre in world coordinates for d = 8.0 m: [ 4.16 -5.94  4.58]
+distance  8.0 m, f =   714.8 px: max |manual - cv2.projectPoints| = 8.53e-14 px
+camera centre in world coordinates for d = 20.0 m: [ 10.4  -14.85   9.65]
+distance 20.0 m, f =  1786.9 px: max |manual - cv2.projectPoints| = 8.53e-14 px
+Perspective: front edge 250.0 px, back edge 192.1 px (ratio 1.30); orthographic: 229.0 px and 229.0 px
+solvePnP left01: rvec = [0.1685 0.2758 0.0135], tvec (mm) = [ -75.2797 -108.9392  399.8218]
+solvePnP left03: rvec = [-0.277   0.1869  0.3548], tvec (mm) = [ -39.8955 -100.4004  318.2425]
+solvePnP left05: rvec = [-0.2919  0.4283  1.3127], tvec (mm) = [  58.4416 -115.3019  317.269 ]
+solvePnP left08: rvec = [-0.091   0.4797  1.7534], tvec (mm) = [ 78.9985 -87.9269 316.7502]
+Homography (image -> fronto-parallel grid):
+ [[   1.1753    0.1061  -94.7089]
+ [   0.0451    1.2595 -109.0918]
+ [   0.0001    0.0004    1.    ]]
+Rotation-only homography K R K^-1:
+ [[  0.6779   0.1483 192.671 ]
+ [ -0.2061   1.0374 -67.3678]
+ [ -0.0009   0.0003   1.    ]]
+Saved figures to outputs/exp03

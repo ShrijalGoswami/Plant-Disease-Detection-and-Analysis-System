@@ -1,0 +1,13 @@
+Images: 3 views of 1024x768 px. Shared intrinsic matrix K:
+[[1147.8439    0.      526.3003]
+ [   0.     1139.4994  391.9789]
+ [   0.        0.        1.    ]]
+SIFT keypoints per image: [5998, 5872, 5956]
+View 1-2: 2107 ratio-test matches, 1735 essential-matrix inliers, 1733 pass the cheirality check
+Triangulated 1733 points from 2 views (mean reprojection error 0.164 px)
+Pose 1->2 vs ground truth: rotation error 0.19 deg, translation direction error 1.07 deg
+View 3: 1905 matches, 858 have known 3D points, PnP inliers 730; pose 2->3 error: rotation 0.24 deg, translation direction 3.36 deg
+  added 792 new points -> total 2525
+Removed 142 outlier points (parallax < 1 deg or outside the 1-99 percentile box)
+Final model: 2383 coloured 3D points, mean reprojection error 0.199 px, median 0.148 px, median parallax 10.85 deg
+Saved points.ply and figures to outputs/exp08
